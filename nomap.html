@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Mind Map with Sidebar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+        .sidebar {
+            width: 220px;
+            background-color: #f4f4f4;
+            padding: 15px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            position: fixed;
+            height: 100%;
+        }
+        .sidebar .nav-item {
+            cursor: pointer;
+            margin: 5px 0;
+            padding: 10px;
+            background-color: #ddd;
+            border-radius: 4px;
+        }
+        .sidebar .nav-item:hover {
+            background-color: #ccc;
+        }
+        .sidebar .sub-menu {
+            display: none;
+            margin-left: 20px;
+        }
+        .sidebar .sub-item {
+            cursor: pointer;
+            padding: 5px;
+            background-color: #eee;
+            border-radius: 4px;
+        }
+        .sidebar .sub-item:hover {
+            background-color: #ddd;
+        }
+        .main-content {
+            margin-left: 220px;
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+        .header {
+            text-align: center;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .info-box {
+            width: 80%;
+            padding: 20px;
+            border: 2px solid #000;
+            margin-bottom: 20px;
+            text-align: left;
+            font-size: 1.2em;
+            line-height: 1.5em;
+            background-color: #f9f9f9;
+        }
+        .concept-title {
+            font-size: 2em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .content-section {
+            margin-top: 100px;
+            display: none;
+        }
+        .content-section:target {
+            display: block;
+        }
+        svg {
+            width: 100%;
+            height: auto;
+            border: 1px solid #ccc;
+        }
+        iframe {
+            width: 100%;
+            height: 800px;
+            border: none;
+        }
+    </style>
+    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="nav-item" onclick="toggleMenu('mindMap')">Clickable Mind Map</div>
+        <div class="nav-item" onclick="toggleSubMenu('group1')">MRI basics</div>
+        <div class="sub-menu" id="group1">
+            <div class="sub-item" data-id="Terminology & Sequences">Terminology & Sequences</div>
+            <div class="sub-item" data-id="FlAIR">FlAIR</div>
+            <div class="sub-item" data-id="T1">T1</div>
+            <div class="sub-item" data-id="T2">T2</div>
+            <div class="sub-item" data-id="SWI">SWI</div>
+            <div class="sub-item" data-id="DWI">DWI</div>
+        </div>
+        <div class="nav-item" onclick="toggleSubMenu('group2')">Normal NeuroAnat</div>
+        <div class="sub-menu" id="group2">
+            <div class="sub-item" data-id="Venus Sinuses">Venus Sinuses</div>
+            <div class="sub-item" data-id="ventricle">ventricle</div>
+            <div class="sub-item" data-id="White matter vs Gray matter">White matter vs Gray matter</div>
+            <div class="sub-item" data-id="telencephalon">telencephalon</div>
+            <div class="sub-item" data-id="cerebralcortex">cerebralcortex</div>
+            <div class="sub-item" data-id="basalganglia">basalganglia</div>
+            <div class="sub-item" data-id="diencephalon">diencephalon</div>
+            <div class="sub-item" data-id="thalamus">thalamus</div>
+            <div class="sub-item" data-id="hypothalamus">hypothalamus</div>
+            <div class="sub-item" data-id="mesencephalon">mesencephalon</div>
+            <div class="sub-item" data-id="posterior fossa">posterior fossa</div>
+            <div class="sub-item" data-id="mid brain">mid brain</div>
+            <div class="sub-item" data-id="brainstem">brainstem</div>
+            <div class="sub-item" data-id="pons">pons</div>
+            <div class="sub-item" data-id="cerebellum">cerebellum</div>
+        </div>
+        <div class="nav-item" onclick="toggleSubMenu('group3')">Normal Structures on MRI</div>
+        <div class="sub-menu" id="group3">
+            <div class="sub-item" data-id="Venus Sinuses.mri">Venus Sinuses.mri</div>
+            <div class="sub-item" data-id="ventricle.mri">ventricle.mri</div>
+            <div class="sub-item" data-id="White matter vs Gray matter.mri">White matter vs Gray matter.mri</div>
+            <div class="sub-item" data-id="telencephalon.mri">telencephalon.mri</div>
+            <div class="sub-item" data-id="cerebralcortex.mri">cerebralcortex.mri</div>
+            <div class="sub-item" data-id="basalganglia.mri">basalganglia.mri</div>
+            <div class="sub-item" data-id="diencephalon.mri">diencephalon.mri</div>
+            <div class="sub-item" data-id="thalamus.mri">thalamus.mri</div>
+            <div class="sub-item" data-id="hypothalamus.mri">hypothalamus.mri</div>
+            <div class="sub-item" data-id="mesencephalon.mri">mesencephalon.mri</div>
+            <div class="sub-item" data-id="posterior fossa.mri">posterior fossa.mri</div>
+            <div class="sub-item" data-id="mid brain.mri">mid brain.mri</div>
+            <div class="sub-item" data-id="brainstem.mri">brainstem.mri</div>
+            <div class="sub-item" data-id="pons.mri">pons.mri</div>
+            <div class="sub-item" data-id="cerebellum.mri">cerebellum.mri</div>
+        </div>
+    </div>
+    <div class="main-content">
+        <div class="header">
+            <h1>NEUROIMAGING TRAINING for beginners with Interactive Mind Map</h1>
+            <p>developed by lab of Roberta la Piana</p>
+            <p>This project is for beginners of neuroimaging. Clicking the nodes in the map and on the left navigation bar will lead you to the details about the topic, while the edge in the map will lead you to why the two topics are related</p>
+        </div>
+        <div class="content">
+            <!-- 在这里插入 iframe -->
+            <iframe src="demo_concept_diagram.html"></iframe>
+        </div>
+    </div>
+    <script>
+        function toggleMenu(menuId) {
+            var menu = document.getElementById(menuId);
+            var isMenuOpen = menu.style.display === 'block';
+            document.querySelectorAll('.sub-menu').forEach(function (el) {
+                el.style.display = 'none';
+            });
+            if (!isMenuOpen) {
+                menu.style.display = 'block';
+            }
+        }
+        function toggleSubMenu(menuId) {
+            var subMenu = document.getElementById(menuId);
+            var isSubMenuOpen = subMenu.style.display === 'block';
+            document.querySelectorAll('.sub-menu').forEach(function (el) {
+                el.style.display = 'none';
+            });
+            if (!isSubMenuOpen) {
+                subMenu.style.display = 'block';
+            }
+        }
+
+        // Function to handle navigation
+        function navigateTo(url) {
+            window.location.href = url;
+        }
+
+        // Add click event listeners to all sub-items
+        document.querySelectorAll('.sub-item').forEach(function(item) {
+            item.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                navigateTo(`${id}.html`);
+            });
+        });
+    </script>
+</body>
+</html>

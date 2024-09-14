@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Graph with Custom Layout</title>
+  <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+  <style>
+    #cy {
+      width: 100%;
+      height: 800px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div id="cy"></div>
+  <script>
+    const radius = 150; // 第一组圆周上的半径
+    const outerRadius = 250; // 第二组最外层圆的半径
+    const middleRadius = 150; // 第二组中间层圆的半径
+    const outerRadius3 = 250; // 第三组最外层圆的半径
+    const middleRadius3 = 150; // 第三组中间层圆的半径
+
+    const cytoscapeData = {
+      nodes: [
+        // 第一组
+        { "data": { "id": "Terminology & Sequences", "center": "1" } },
+        { "data": { "id": "FlAIR", "center": "1" } },
+        { "data": { "id": "T1", "center": "1" } },
+        { "data": { "id": "T2", "center": "1" } },
+        { "data": { "id": "SWI", "center": "1" } },
+        { "data": { "id": "DWI", "center": "1" } },
+
+        // 第二组
+        { "data": { "id": "Normal Neuroanat", "center": "2" } },
+        { "data": { "id": "brainstem", "center": "2", "layer": "inner" } },
+        { "data": { "id": "basalganglia", "center": "2", "layer": "outer" } },
+        { "data": { "id": "cerebellum", "center": "2", "layer": "inner" } },
+        { "data": { "id": "cerebralcortex", "center": "2", "layer": "outer" } },
+        { "data": { "id": "diencephalon", "center": "2", "layer": "outer" } },
+        { "data": { "id": "hypothalamus", "center": "2", "layer": "outer" } },
+        { "data": { "id": "mid brain", "center": "2", "layer": "inner" } },
+        { "data": { "id": "mesencephalon", "center": "2", "layer": "inner" } },
+        { "data": { "id": "medulla", "center": "2", "layer": "inner" } },
+        { "data": { "id": "Meninges", "center": "2", "layer": "outer" } },
+        { "data": { "id": "posterior fossa", "center": "2", "layer": "inner" } },
+        { "data": { "id": "pons", "center": "2", "layer": "inner" } },
+        { "data": { "id": "telencephalon", "center": "2", "layer": "inner" } },
+        { "data": { "id": "thalamus", "center": "2", "layer": "outer" } },
+        { "data": { "id": "telencephalon", "center": "2", "layer": "outer" } },
+        { "data": { "id": "Ventricle", "center": "2", "layer": "outer" } },
+        { "data": { "id": "Venus Sinuses", "center": "2", "layer": "outer" } },
+        { "data": { "id": "White matter vs Gray matter", "center": "2", "layer": "outer" } },
+
+        // 第三组
+        { "data": { "id": "normal structures on MRI", "center": "3" } },
+        { "data": { "id": "brainstem.mri", "center": "3", "layer": "inner" } },
+        { "data": { "id": "basal ganglia.mri", "center": "3", "layer": "outer" } },
+        { "data": { "id": "cerebellum.mri", "center": "3", "layer": "inner" } },
+        { "data": { "id": "cerebral cortex.mri", "center": "3", "layer": "outer" } },
+        { "data": { "id": "diencephalon.mri", "center": "3", "layer": "outer" } },
+        { "data": { "id": "hypothalamus.mri", "center": "3", "layer": "outer" } },
+        { "data": { "id": "mid brain.mri", "center": "3", "layer": "inner" } },
+        { "data": { "id": "mesencephalon.mri", "center": "3", "layer": "inner" } },
+        { "data": { "id": "medulla.mri", "center": "3", "layer": "inner" } },
+        { "data": { "id": "Meninges.mri", "center": "3", "layer": "outer" } },
+        { "data": { "id": "posterior fossa.mri", "center": "3", "layer": "inner" } },
+        { "data": { "id": "pons.mri", "center": "3", "layer": "inner" } },
+        { "data": { "id": "telencephalon.mri", "center": "3", "layer": "inner" } },
+        { "data": { "id": "thalamus.mri", "center": "3", "layer": "outer" } },
+        { "data": { "id": "telencephalon.mri", "center": "3", "layer": "outer" } },
+        { "data": { "id": "Ventricle.mri", "center": "3", "layer": "outer" } },
+        { "data": { "id": "Venus Sinuses.mri", "center": "3", "layer": "outer" } },
+        { "data": { "id": "White matter vs Gray matter.mri", "center": "3", "layer": "outer" } }
+      ],
+      edges: [
+        { "data": { "source": "Terminology & Sequences", "target": "FlAIR" } },
+        { "data": { "source": "Terminology & Sequences", "target": "T1" } },
+        { "data": { "source": "Terminology & Sequences", "target": "T2" } },
+        { "data": { "source": "Terminology & Sequences", "target": "SWI" } },
+        { "data": { "source": "Terminology & Sequences", "target": "DWI" } },
+        { "data": { "source": "Terminology & Sequences", "target": "Normal Neuroanat" } },
+        { "data": { "source": "Terminology & Sequences", "target": "normal structures on MRI" } },
+        { "data": { "source": "Normal Neuroanat", "target": "normal structures on MRI" } },
+      ]
+    };
+
+    const cy = cytoscape({
+      container: document.getElementById('cy'),
+      elements: cytoscapeData,
+      style: [
+        {
+          selector: 'node',
+          style: {
+            'background-color': 'pink',
+            'label': 'data(id)',
+            'text-valign': 'bottom',
+            'text-halign': 'center',
+            'color': 'red',
+            'text-margin-y': 10,
+            'width': '40px',
+            'height': '40px'
+          }
+        },
+        {
+          selector: 'node[center = "2"]',
+          style: {
+            'background-color': '#add8e6',
+            'color': '#00008b',
+            'text-valign': 'bottom',
+            'text-halign': 'center',
+            'text-margin-y': 10,
+            'width': '50px',
+            'height': '50px'
+          }
+        },
+        {
+          selector: 'node[center = "3"]',
+          style: {
+            'background-color': '#90EE90',
+            'color': '#006400',
+            'text-valign': 'bottom',
+            'text-halign': 'center',
+            'text-margin-y': 10,
+            'width': '50px',
+            'height': '50px'
+          }
+        },
+        {
+          selector: 'edge',
+          style: {
+            'width': 2,
+            'line-color': '#ccc',
+            'target-arrow-color': '#ccc',
+            'target-arrow-shape': 'triangle',
+            'curve-style': 'bezier'
+          }
+        }
+      ],
+      layout: {
+        name: 'preset',
+        positions: {},
+        animate: true,
+        padding: 10
+      }
+    });
+
+    function customLayout() {
+      // 第一组
+      const center1 = { x: 200, y: 200 };
+      const nodes1 = cy.nodes().filter(node => node.data('center') === "1");
+      const centerNode1 = nodes1.find(node => node.id() === "Terminology & Sequences");
+
+      // 将中心节点固定在中心位置
+      cy.layout({
+        name: 'preset',
+        positions: { "Terminology & Sequences": center1 },
+        animate: true,
+        padding: 10
+      }).run();
+
+      // 计算圆周上节点的位置
+      const numNodes1 = nodes1.length - 1;
+      const angleStep1 = 2 * Math.PI / numNodes1;
+
+      nodes1.forEach((node, index) => {
+        if (node.id() !== "Terminology & Sequences") {
+          const angle = angleStep1 * index;
+          const x = center1.x + radius * Math.cos(angle);
+          const y = center1.y + radius * Math.sin(angle);
+
+          cy.layout({
+            name: 'preset',
+            positions: { [node.id()]: { x, y } },
+            animate: true,
+            padding: 10
+          }).run();
+        }
+      });
+
+      // 第二组
+      const center2 = { x: 800, y: 400 };
+      const nodes2 = cy.nodes().filter(node => node.data('center') === "2");
+      const centerNode2 = nodes2.find(node => node.id() === "Normal Neuroanat");
+
+      // 将中心节点固定在中心位置
+      cy.layout({
+        name: 'preset',
+        positions: { "Normal Neuroanat": center2 },
+        animate: true,
+        padding: 10
+      }).run();
+
+      // 计算圆周上节点的位置
+      const outerNodes = nodes2.filter(node => node.data('layer') === 'outer');
+      const innerNodes = nodes2.filter(node => node.data('layer') === 'inner');
+
+      // 外圈节点
+      const numOuterNodes = outerNodes.length;
+      const angleStepOuter = 2 * Math.PI / numOuterNodes;
+
+      outerNodes.forEach((node, index) => {
+        const angle = angleStepOuter * index;
+        const x = center2.x + outerRadius * Math.cos(angle);
+        const y = center2.y + outerRadius * Math.sin(angle);
+
+        cy.layout({
+          name: 'preset',
+          positions: { [node.id()]: { x, y } },
+          animate: true,
+          padding: 10
+        }).run();
+      });
+
+      // 内圈节点
+      const numInnerNodes = innerNodes.length;
+      const angleStepInner = 2 * Math.PI / numInnerNodes;
+
+      innerNodes.forEach((node, index) => {
+        const angle = angleStepInner * index;
+        const x = center2.x + middleRadius * Math.cos(angle);
+        const y = center2.y + middleRadius * Math.sin(angle);
+
+        cy.layout({
+          name: 'preset',
+          positions: { [node.id()]: { x, y } },
+          animate: true,
+          padding: 10
+        }).run();
+      });
+
+      // 第三组
+      const center3 = { x: 1500, y: 400 };
+      const nodes3 = cy.nodes().filter(node => node.data('center') === "3");
+
+      // 将中心节点固定在中心位置
+      cy.layout({
+        name: 'preset',
+        positions: { "normal structures on MRI": center3 },
+        animate: true,
+        padding: 10
+      }).run();
+
+      // 计算圆周上节点的位置
+      const outerNodes3 = nodes3.filter(node => node.data('layer') === 'outer');
+      const innerNodes3 = nodes3.filter(node => node.data('layer') === 'inner');
+
+      // 外圈节点
+      const numOuterNodes3 = outerNodes3.length;
+      const angleStepOuter3 = 2 * Math.PI / numOuterNodes3;
+
+      outerNodes3.forEach((node, index) => {
+        const angle = angleStepOuter3 * index;
+        const x = center3.x + outerRadius3 * Math.cos(angle);
+        const y = center3.y + outerRadius3 * Math.sin(angle);
+
+        cy.layout({
+          name: 'preset',
+          positions: { [node.id()]: { x, y } },
+          animate: true,
+          padding: 10
+        }).run();
+      });
+
+      // 内圈节点
+      const numInnerNodes3 = innerNodes3.length;
+      const angleStepInner3 = 2 * Math.PI / numInnerNodes3;
+
+      innerNodes3.forEach((node, index) => {
+        const angle = angleStepInner3 * index;
+        const x = center3.x + middleRadius3 * Math.cos(angle);
+        const y = center3.y + middleRadius3 * Math.sin(angle);
+
+        cy.layout({
+          name: 'preset',
+          positions: { [node.id()]: { x, y } },
+          animate: true,
+          padding: 10
+        }).run();
+      });
+    }
+
+    // 执行自定义布局
+    customLayout();
+
+    // 添加点击事件
+    cy.on('tap', 'node', function(event) {
+      const node = event.target;
+      const nodeId = node.id();
+      const url = `${nodeId}.html`; // 构建相对路径的 URL
+      window.location.href = url; // 跳转到相应的 HTML 页面
+    });
+
+    cy.on('tap', 'edge', function(event) {
+      const edge = event.target;
+      const sourceId = edge.source().id();
+      const targetId = edge.target().id();
+      const url = `edge_${sourceId}_to_${targetId}.html`; // 构建相对路径的 URL
+      window.location.href = url; // 跳转到相应的 HTML 页面
+    });
+  </script>
+</body>
+</html>
